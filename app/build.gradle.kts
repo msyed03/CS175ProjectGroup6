@@ -6,6 +6,10 @@ android {
     namespace = "edu.sjsu.android.cs175projectgroup6"
     compileSdk = 35
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     defaultConfig {
         applicationId = "edu.sjsu.android.cs175projectgroup6"
         minSdk = 24
