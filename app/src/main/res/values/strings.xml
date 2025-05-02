@@ -4,4 +4,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="pronounce_this_word">Pronounce this Word</string>
     <string name="word_jump">Word Jump</string>
+    <string name="pronounce_text">Pronounce this word .......</string>
+    <string name="speak_description">Speak Button</string>
+    <string name="bird">Bird</string>
 </resources>
