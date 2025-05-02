@@ -27,10 +27,16 @@ public class WordJumpPlayer {
 
     public void moveLeft() {
         x -= moveSpeed;
+        if (x + width < 0) {
+            x = screenX;
+        }
     }
 
     public void moveRight() {
         x += moveSpeed;
+        if (x > screenX) {
+            x = -width;
+        }
     }
 
     //TODO: Change to drawable and animated bird

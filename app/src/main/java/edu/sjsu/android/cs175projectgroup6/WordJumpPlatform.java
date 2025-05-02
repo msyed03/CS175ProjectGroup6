@@ -3,7 +3,7 @@ package edu.sjsu.android.cs175projectgroup6;
 import android.graphics.Rect;
 
 public class WordJumpPlatform {
-    int x, y, width = 200, height = 30;
+    int x, y, width = 250, height = 40;
 
     public WordJumpPlatform(int x, int y) {
         this.x = x;
