@@ -1,14 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/pronounceWordLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PronounceThisWord">
+    tools:context=".PronounceThisWord"
+    android:background="#A8DADC">
 
-    <TextView
-        android:id="@+id/pronounceWord"
+    <View
+        android:id="@+id/finishLine"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_gravity="top"
+        android:layout_marginTop="0dp"
+        android:background="@drawable/finish_line" />
+
+    <include
+        layout="@layout/obstacle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="100dp" />
+
+    <include
+        layout="@layout/obstacle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="200dp" />
+
+    <include
+        layout="@layout/obstacle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="300dp" />
+
+    <include
+        layout="@layout/obstacle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="400dp" />
+
+    <include
+        layout="@layout/obstacle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="500dp" />
+
+    <include
+        layout="@layout/obstacle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="600dp" />
+
+
+    <ImageView
+        android:id="@+id/ball"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="50dp"
+        android:src="@drawable/ball"
+        android:contentDescription="Ball" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/speakButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/pronounce_this_word" />
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/microphone_icon"
+        android:contentDescription="Speak Button"
+        android:backgroundTint="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/speechStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pronounce this word ......."
+        android:textSize="18sp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="40dp" />
 
 </FrameLayout>
