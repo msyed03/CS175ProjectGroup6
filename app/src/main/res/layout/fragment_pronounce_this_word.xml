@@ -8,59 +8,20 @@
     tools:context=".PronounceThisWord"
     android:background="#A8DADC">
 
-    <View
-        android:id="@+id/finishLine"
+    <ImageView
+        android:id="@+id/wall"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:layout_gravity="top"
-        android:layout_marginTop="0dp"
-        android:background="@drawable/finish_line" />
-
-    <include
-        layout="@layout/obstacle"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="100dp" />
-
-    <include
-        layout="@layout/obstacle"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="200dp" />
-
-    <include
-        layout="@layout/obstacle"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="300dp" />
-
-    <include
-        layout="@layout/obstacle"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="400dp" />
-
-    <include
-        layout="@layout/obstacle"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="500dp" />
-
-    <include
-        layout="@layout/obstacle"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="600dp" />
-
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:src="@drawable/wall_design" />
 
     <ImageView
-        android:id="@+id/bird"
+        android:id="@+id/ball"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="50dp"
-        android:src="@drawable/bird"
-        android:contentDescription="@string/bird" />
+        android:layout_gravity="center_vertical|start"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/ball"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/speakButton"
@@ -69,18 +30,20 @@
         android:clickable="true"
         android:focusable="true"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="25dp"
         android:src="@drawable/microphone_icon"
         android:contentDescription="@string/speak_description"
-        android:backgroundTint="#FFFFFF"/>
+        android:backgroundTint="#FFFFFF"
+        android:scaleType="centerInside"
+        app:maxImageSize="40dp"/>
 
     <TextView
         android:id="@+id/speechStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/pronounce_text"
-        android:textSize="18sp"
+        android:textSize="25sp"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginTop="40dp" />
 
