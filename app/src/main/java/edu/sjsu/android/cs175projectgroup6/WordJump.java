@@ -34,9 +34,7 @@ public class WordJump extends Fragment {
         requireActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        int screenX = requireActivity().getWindowManager().getDefaultDisplay().getWidth();
-        int screenY = requireActivity().getWindowManager().getDefaultDisplay().getHeight();
-        gameView = new WordJumpGameView(requireContext(), screenX, screenY);
+        gameView = new WordJumpGameView(requireContext());
 
         return gameView;
         // Inflate the layout for this fragment
@@ -46,12 +44,12 @@ public class WordJump extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        gameView.resume();
+        //gameView.resume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        gameView.pause();
+        //gameView.pause();
     }
 }

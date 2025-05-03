@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager = getSupportFragmentManager();
     Fragment wordJump = new WordJump();
+    private WordJumpGameView gameView;
     Fragment pronounceThisWord = new PronounceThisWord();
 
     @Override
@@ -28,42 +29,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-        View view = binding.getRoot();
-        setContentView(view);
-        EdgeToEdge.enable(this);
+        setContentView(binding.getRoot());
 
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction
-                .replace(R.id.flFragment, wordJump)
-                .addToBackStack(null)
-                .commit();
+        // 1) don't swap in any fragment here
+        // 2) hide the fragment container so you just see the two buttons
+        binding.flFragment.setVisibility(View.GONE);
 
+        // wire up the two buttons:
         binding.wordJumpFragment.setOnClickListener(this::switchToWordJump);
         binding.pronounceWordFragment.setOnClickListener(this::switchToPronounceWord);
-
-        EdgeToEdge.enable(this);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
     }
 
     public void switchToWordJump(View view) {
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction
-                .replace(R.id.flFragment, wordJump)
+        // make the container visible the first time:
+        binding.flFragment.setVisibility(View.VISIBLE);
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.flFragment, wordJump)
                 .addToBackStack(null)
                 .commit();
-        Toast.makeText(this, "Switched to Word Jump", Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(this, "Starting Word Jump", Toast.LENGTH_SHORT).show();
     }
 
     public void switchToPronounceWord(View view) {
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction
-                .replace(R.id.flFragment, pronounceThisWord)
+        binding.flFragment.setVisibility(View.VISIBLE);
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.flFragment, pronounceThisWord)
                 .addToBackStack(null)
                 .commit();
-        Toast.makeText(this, "Switched to Pronounce This Word", Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(this, "Starting Pronounce This Word", Toast.LENGTH_SHORT).show();
     }
 }
