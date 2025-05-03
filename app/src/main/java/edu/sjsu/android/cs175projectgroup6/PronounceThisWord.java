@@ -19,6 +19,10 @@ public class PronounceThisWord extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private MediaRecorder mediaRecorder;
+    private String filename="";
+    private Button recordButton;
+    private boolean isRecording=false;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -49,6 +53,13 @@ public class PronounceThisWord extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        recordButton=findViewById(R.id.speakButton);
+        recordButton.setOnClickListeer(v->{
+            if (isRecording)
+                stopRecording();
+            else
+                startRecording();
+        });
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
