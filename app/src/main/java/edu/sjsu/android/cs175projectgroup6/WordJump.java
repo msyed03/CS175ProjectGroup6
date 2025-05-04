@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +16,7 @@ import android.view.WindowManager;
  * Use the {@link WordJump#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class WordJump extends Fragment {
+public class WordJump extends Fragment implements WordJumpGameView.GameEventListener {
     private WordJumpGameView gameView;
 
     public WordJump() {
@@ -51,5 +52,13 @@ public class WordJump extends Fragment {
     public void onPause() {
         super.onPause();
         //gameView.pause();
+    }
+
+    @Override
+    public void onRequestRestart() {
+        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        ft.setReorderingAllowed(true);
+        ft.replace(R.id.wordJumpFragment, new WordJump());
+        ft.commit();
     }
 }

@@ -40,19 +40,25 @@ public class WordJumpGameView extends View {
     private int currentFrame = 0;
     private long frameDuration = 100;
 
-    private static final float GROUND_HEIGHT   = 80f;
-    private static final float PLATFORM_HEIGHT = 500f;
+    private static final float GROUND_HEIGHT   = 100f;
+    private static final float PLATFORM_HEIGHT = 280f;
     private static final float PLATFORM_GAP    = 300f;
     private static final float ARC_HEIGHT      = 200f;
     private static final float IDLE_AMPLITUDE  = 30f;
 
+    public interface GameEventListener {
+        void onRequestRestart();
+    }
+
+    private GameEventListener listener;
+
+    public void setGameEventListener(GameEventListener listener) {
+        this.listener = listener;
+    }
 
     public WordJumpGameView(Context ctx) {
         super(ctx);
         qm = new QuestionManager(ctx);
-
-        // Set background drawable
-//        setBackgroundResource(R.drawable.cloud);
 
         platformPaint.setColor(0xff64C864); // rgb(100,200,100)
         textPaint.setColor(0xff000000);
@@ -182,7 +188,9 @@ public class WordJumpGameView extends View {
 
         // draw base platform
 //        c.drawRect(basePlatformRect, platformPaint);
-//        c.drawBitmap(basePlatformBitmap, basePlatformBitmap.left, basePlatformBitmap.top, null);
+        if (basePlatformBitmap != null) {
+            c.drawBitmap(basePlatformBitmap, basePlatformRect.left, basePlatformRect.top, null);
+        }
         if (q == null) return;
 
         // Draw left and right platforms
@@ -251,15 +259,14 @@ public class WordJumpGameView extends View {
             public void onAnimationEnd(Animator a) {
                 boolean correct = qm.answer(selectedIndex);
                 if (!correct) {
-                    isJumping = false;
-                    duckX = restingDuckX;
-                    duckY = restingDuckY;
-                    startIdleBounce();
+                    handleGameOver();
                     return;
                 }
 
                 // Prepare next question options
                 randomizeOptions();
+
+                basePlatformBitmap = hitL ? leftPlatformBitmap : rightPlatformBitmap;
 
                 float initT = target.top, initB = target.bottom;
                 float finalT= groundRect.top, finalB = groundRect.bottom;
@@ -294,5 +301,19 @@ public class WordJumpGameView extends View {
         });
         jumpAnimator.start();
         return true;
+    }
+
+    // Call this when restart is needed
+    private void requestRestart() {
+        if (listener != null) {
+            listener.onRequestRestart();
+        }
+    }
+
+    // Example: call this when player loses
+    private void handleGameOver() {
+        // TODO tree branch animation
+        // TODO current score and high score screen (we can pass this through the requestRestart?)
+        requestRestart();
     }
 }
