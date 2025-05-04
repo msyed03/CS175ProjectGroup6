@@ -24,18 +24,15 @@ public class WordJumpGameView extends View {
     private final Random random = new Random();
     private boolean swapOptions;
     private String leftOptionText, rightOptionText;
-    private final Bitmap rawBallBitmap;
-    private Bitmap ballBitmap;
-
+    private Bitmap cloudBitmap;
     private RectF groundRect;            // fixed reference “ground”
     private RectF basePlatformRect;      // current platform the ball bounces on
     private RectF leftPlatformRect, rightPlatformRect;
+    private Bitmap leftPlatformBitmap, rightPlatformBitmap, basePlatformBitmap;
     private float duckX, duckY;
     private float restingDuckX, restingDuckY;
     private AnimationDrawable animatedJump;
     private int duckWidth, duckHeight;
-
-
     private ValueAnimator idleAnimator, jumpAnimator, shiftAnimator;
     private boolean isJumping = false;
 
@@ -44,7 +41,7 @@ public class WordJumpGameView extends View {
     private long frameDuration = 100;
 
     private static final float GROUND_HEIGHT   = 80f;
-    private static final float PLATFORM_HEIGHT = 100f;
+    private static final float PLATFORM_HEIGHT = 500f;
     private static final float PLATFORM_GAP    = 300f;
     private static final float ARC_HEIGHT      = 200f;
     private static final float IDLE_AMPLITUDE  = 30f;
@@ -53,7 +50,9 @@ public class WordJumpGameView extends View {
     public WordJumpGameView(Context ctx) {
         super(ctx);
         qm = new QuestionManager(ctx);
-        rawBallBitmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.ball);
+
+        // Set background drawable
+//        setBackgroundResource(R.drawable.cloud);
 
         platformPaint.setColor(0xff64C864); // rgb(100,200,100)
         textPaint.setColor(0xff000000);
@@ -65,9 +64,18 @@ public class WordJumpGameView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w,h,oldw,oldh);
 
+        // CLOUD
+        Bitmap originalCloud = BitmapFactory.decodeResource(getResources(), R.drawable.cloud);
+        int targetWidth = getWidth() - 1;
+        float aspectRatio = (float) originalCloud.getHeight() / originalCloud.getWidth();
+        int targetHeight = (int) (targetWidth * aspectRatio);
+        cloudBitmap = Bitmap.createScaledBitmap(originalCloud, targetWidth, targetHeight, true);
+
+        // GROUND
         groundRect = new RectF(0, h - GROUND_HEIGHT, w, h);
         basePlatformRect = new RectF(groundRect);
 
+        // DUCK
         ImageView dummyImageView = new ImageView(getContext());
         dummyImageView.setBackgroundResource(R.drawable.duck_right_animation);
         animatedJump = (AnimationDrawable) dummyImageView.getBackground();
@@ -91,6 +99,32 @@ public class WordJumpGameView extends View {
         duckY = restingDuckY;
 
         startIdleBounce();
+
+        // Load platform images
+        Bitmap rawPlatform = BitmapFactory.decodeResource(getResources(), R.drawable.platform_base);
+        float width = basePlatformRect.width();    // or fixed width
+        float height = PLATFORM_HEIGHT;
+        basePlatformBitmap = Bitmap.createScaledBitmap(rawPlatform, (int)width, (int)height, true);
+
+        leftPlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_branch_left);
+        rightPlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_branch_right);
+
+        // Scale images to match the platform rects
+        // however we have to make sure they're already initialized
+
+        leftPlatformBitmap = Bitmap.createScaledBitmap(
+                leftPlatformBitmap,
+                (int) leftPlatformRect.width(),
+                (int) leftPlatformRect.height(),
+                true
+        );
+
+        rightPlatformBitmap = Bitmap.createScaledBitmap(
+                rightPlatformBitmap,
+                (int) rightPlatformRect.width(),
+                (int) rightPlatformRect.height(),
+                true
+        );
     }
 
     private void computeAnswerPlatforms(int viewWidth) {
@@ -98,9 +132,9 @@ public class WordJumpGameView extends View {
         float pw= viewWidth * 0.35f;
         float topY = basePlatformRect.top - PLATFORM_GAP - PLATFORM_HEIGHT;
 
-        leftPlatformRect  = new RectF(m, topY, m+pw,        topY+PLATFORM_HEIGHT);
+        leftPlatformRect  = new RectF(0, topY, m+pw,        topY+PLATFORM_HEIGHT);
         rightPlatformRect = new RectF(viewWidth-m-pw, topY,
-                viewWidth-m,    topY+PLATFORM_HEIGHT);
+                viewWidth,    topY+PLATFORM_HEIGHT);
     }
 
     private void randomizeOptions() {
@@ -136,17 +170,26 @@ public class WordJumpGameView extends View {
     protected void onDraw(Canvas c) {
         super.onDraw(c);
 
+        if (cloudBitmap != null) {
+            c.drawBitmap(cloudBitmap, 0, 120, null);
+        }
+
         Question q = qm.getCurrent();
         if (q != null) {
             float promptY = getHeight() * 0.3f;
             c.drawText(q.getPrompt(), getWidth()/2f, promptY, textPaint);
         }
 
-        c.drawRect(basePlatformRect, platformPaint);
+        // draw base platform
+//        c.drawRect(basePlatformRect, platformPaint);
+//        c.drawBitmap(basePlatformBitmap, basePlatformBitmap.left, basePlatformBitmap.top, null);
         if (q == null) return;
 
-        c.drawRect(leftPlatformRect,  platformPaint);
-        c.drawRect(rightPlatformRect, platformPaint);
+        // Draw left and right platforms
+//        c.drawRect(leftPlatformRect,  platformPaint);
+//        c.drawRect(rightPlatformRect, platformPaint);
+        c.drawBitmap(leftPlatformBitmap, leftPlatformRect.left, leftPlatformRect.top, null);
+        c.drawBitmap(rightPlatformBitmap, rightPlatformRect.left, rightPlatformRect.top, null);
 
         float textY = leftPlatformRect.centerY()
                 - (textPaint.descent() + textPaint.ascent())/2f;
