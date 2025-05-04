@@ -4,7 +4,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +35,7 @@ public class WordJump extends Fragment implements WordJumpGameView.GameEventList
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         gameView = new WordJumpGameView(requireContext());
-
+        gameView.setGameEventListener(this);
         return gameView;
         // Inflate the layout for this fragment
 //        return inflater.inflate(R.layout.fragment_word_jump, container, false);
@@ -56,9 +55,19 @@ public class WordJump extends Fragment implements WordJumpGameView.GameEventList
 
     @Override
     public void onRequestRestart() {
-        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
-        ft.setReorderingAllowed(true);
-        ft.replace(R.id.wordJumpFragment, new WordJump());
-        ft.commit();
+        // Remove current view
+        if (gameView != null) {
+            ((ViewGroup) gameView.getParent()).removeView(gameView);
+        }
+
+        // Recreate game view
+        gameView = new WordJumpGameView(getContext());
+        gameView.setGameEventListener(this);
+
+        // Add the new view to the fragment
+        ViewGroup root = (ViewGroup) getView();  // or whatever your layout is
+        if (root != null) {
+            root.addView(gameView);
+        }
     }
 }
