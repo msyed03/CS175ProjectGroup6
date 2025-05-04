@@ -10,8 +10,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.drawable.AnimationDrawable;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+
 import java.util.Random;
 
 public class WordJumpGameView extends View {
@@ -27,18 +30,25 @@ public class WordJumpGameView extends View {
     private RectF groundRect;            // fixed reference “ground”
     private RectF basePlatformRect;      // current platform the ball bounces on
     private RectF leftPlatformRect, rightPlatformRect;
+    private float duckX, duckY;
+    private float restingDuckX, restingDuckY;
+    private AnimationDrawable animatedJump;
+    private int duckWidth, duckHeight;
 
-    private float ballX, ballY;          // actual draw coords
-    private float restingBallX, restingBallY;  // atop basePlatformRect
 
     private ValueAnimator idleAnimator, jumpAnimator, shiftAnimator;
     private boolean isJumping = false;
+
+    private long lastFrameTime = 0;
+    private int currentFrame = 0;
+    private long frameDuration = 100;
 
     private static final float GROUND_HEIGHT   = 80f;
     private static final float PLATFORM_HEIGHT = 100f;
     private static final float PLATFORM_GAP    = 300f;
     private static final float ARC_HEIGHT      = 200f;
     private static final float IDLE_AMPLITUDE  = 30f;
+
 
     public WordJumpGameView(Context ctx) {
         super(ctx);
@@ -58,22 +68,27 @@ public class WordJumpGameView extends View {
         groundRect = new RectF(0, h - GROUND_HEIGHT, w, h);
         basePlatformRect = new RectF(groundRect);
 
-        float desiredH = GROUND_HEIGHT * 0.8f;
-        float scale    = desiredH / rawBallBitmap.getHeight();
-        ballBitmap = Bitmap.createScaledBitmap(
-                rawBallBitmap,
-                (int)(rawBallBitmap.getWidth() * scale),
-                (int) desiredH,
-                true
-        );
+        ImageView dummyImageView = new ImageView(getContext());
+        dummyImageView.setBackgroundResource(R.drawable.duck_right_animation);
+        animatedJump = (AnimationDrawable) dummyImageView.getBackground();
+        animatedJump.setBounds(0, 0, animatedJump.getIntrinsicWidth(), animatedJump.getIntrinsicHeight());
+        animatedJump.start();
+
+        float desiredH = GROUND_HEIGHT * 3.0f;
+        float scale = desiredH / animatedJump.getIntrinsicHeight();
+        duckWidth = (int)(animatedJump.getIntrinsicWidth() * scale);
+        duckHeight = (int)(animatedJump.getIntrinsicHeight() * scale);
+
+        animatedJump.setBounds(0, 0, animatedJump.getIntrinsicWidth(), animatedJump.getIntrinsicHeight());
+        animatedJump.start();
 
         computeAnswerPlatforms(w);
         randomizeOptions();  // set initial option placement
 
-        restingBallX = basePlatformRect.centerX() - ballBitmap.getWidth()/2f;
-        restingBallY = basePlatformRect.top        - ballBitmap.getHeight();
-        ballX = restingBallX;
-        ballY = restingBallY;
+        restingDuckX = basePlatformRect.centerX() - duckWidth / 2f;
+        restingDuckY = basePlatformRect.top - duckHeight;
+        duckX = restingDuckX;
+        duckY = restingDuckY;
 
         startIdleBounce();
     }
@@ -110,7 +125,7 @@ public class WordJumpGameView extends View {
         idleAnimator.addUpdateListener(a -> {
             if (!isJumping) {
                 float f = (float)a.getAnimatedValue();
-                ballY = restingBallY - (IDLE_AMPLITUDE * f);
+                duckY = restingDuckY - (IDLE_AMPLITUDE * f);
                 invalidate();
             }
         });
@@ -139,7 +154,21 @@ public class WordJumpGameView extends View {
         c.drawText(leftOptionText,  leftPlatformRect.centerX(),  textY, textPaint);
         c.drawText(rightOptionText, rightPlatformRect.centerX(), textY, textPaint);
 
-        c.drawBitmap(ballBitmap, ballX, ballY, null);
+        c.save();
+        c.translate(duckX, duckY);
+        c.scale((float)duckWidth / animatedJump.getIntrinsicWidth(),
+                (float)duckHeight / animatedJump.getIntrinsicHeight());
+        animatedJump.draw(c);
+
+        // Frames for the animation
+        long now = System.currentTimeMillis();
+
+        if (now - lastFrameTime >= frameDuration) {
+            animatedJump.selectDrawable(currentFrame);
+            currentFrame = (currentFrame + 1) % animatedJump.getNumberOfFrames();
+            lastFrameTime = now;
+        }
+        c.restore();
     }
 
     @Override
@@ -154,10 +183,10 @@ public class WordJumpGameView extends View {
         idleAnimator.cancel();
         isJumping = true;
 
-        float startX = ballX, startY = ballY;
+        float startX = duckX, startY = duckY;
         RectF target = hitL ? leftPlatformRect : rightPlatformRect;
-        float endX   = target.centerX() - ballBitmap.getWidth()/2f;
-        float endY   = target.top         - ballBitmap.getHeight();
+        float endX = target.centerX() - duckWidth/2f;
+        float endY = target.top       - duckHeight;
 
         // Map tap to the correct question index based on swap
         int selectedIndex = hitL
@@ -168,10 +197,10 @@ public class WordJumpGameView extends View {
         jumpAnimator.setDuration(600);
         jumpAnimator.addUpdateListener(a -> {
             float f = (float)a.getAnimatedValue();
-            ballX = startX + f*(endX - startX);
+            duckX = startX + f*(endX - startX);
             float linY = startY + f*(endY - startY);
             float arc  = 4 * ARC_HEIGHT * f * (1 - f);
-            ballY = linY - arc;
+            duckY = linY - arc;
             invalidate();
         });
         jumpAnimator.addListener(new AnimatorListenerAdapter() {
@@ -180,8 +209,8 @@ public class WordJumpGameView extends View {
                 boolean correct = qm.answer(selectedIndex);
                 if (!correct) {
                     isJumping = false;
-                    ballX = restingBallX;
-                    ballY = restingBallY;
+                    duckX = restingDuckX;
+                    duckY = restingDuckY;
                     startIdleBounce();
                     return;
                 }
@@ -204,10 +233,10 @@ public class WordJumpGameView extends View {
 
                     computeAnswerPlatforms(vw);
 
-                    restingBallX = basePlatformRect.centerX() - ballBitmap.getWidth()/2f;
-                    restingBallY = basePlatformRect.top        - ballBitmap.getHeight();
-                    ballX = restingBallX;
-                    ballY = restingBallY;
+                    restingDuckX = basePlatformRect.centerX() - duckWidth/2f;
+                    restingDuckY = basePlatformRect.top       - duckHeight;
+                    duckX = restingDuckX;
+                    duckY = restingDuckY;
                     invalidate();
                 });
                 shiftAnimator.addListener(new AnimatorListenerAdapter() {
@@ -224,53 +253,3 @@ public class WordJumpGameView extends View {
         return true;
     }
 }
-/*
-    private void generatePlatforms() {
-        int y = screenY;
-        for (int i = 0; i < 10; i++) {
-            platforms.add(new WordJumpPlatform(new Random().nextInt(screenX - 100), y));
-            y -= 200;
-        }
-    }
-
-    @Override
-    public void run() {
-        while (isPlaying) {
-            update();
-            draw();
-            sleep();
-        }
-    }
-
-    private void update() {
-        player.update();
-
-        for (WordJumpPlatform platform : platforms) {
-            if (player.velocityY > 0 && player.getRect().intersect(platform.getRect())) {
-                player.jump();
-            }
-        }
-
-        if (player.y < screenY / 2) {
-            int dy = (screenY / 2) - player.y;
-            player.y = screenY / 2;
-
-            for (WordJumpPlatform platform : platforms) {
-                platform.y += dy;
-                if (platform.y > screenY) {
-                    platform.y = 0;
-                    platform.x = new Random().nextInt(screenX - 100);
-                }
-            }
-        }
-    }
-
-
-    private void sleep() {
-        try {
-            Thread.sleep(17); // 60 fps
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-*/
