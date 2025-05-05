@@ -8,6 +8,7 @@
     android:gravity="center"
     android:orientation="vertical"
     android:padding="24dp"
+    android:background="@color/md_theme_background"
     tools:context=".MainActivity">
 
     <ImageView
@@ -25,6 +26,7 @@
         android:gravity="center"
         android:text="DuoWingo"
         android:fontFamily="@font/gilbert_bold"
+        android:textColor="@color/md_theme_onBackground"
         android:textSize="36sp"/>
 
     <!-- Main Menu Buttons -->
@@ -33,20 +35,26 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:text="Word Jump" />
+        android:text="Word Jump"
+        android:textColor="@color/md_theme_onPrimary"
+        android:backgroundTint="@color/md_theme_primary"/>
 
     <Button
         android:id="@+id/pronounceWordFragment"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:text="Pronounce This Word"
-        android:layout_marginBottom="20dp"/>
+        android:layout_marginBottom="20dp"
+        android:textColor="@color/md_theme_onPrimary"
+        android:backgroundTint="@color/md_theme_primary"/>
 
     <Button
         android:id="@+id/button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:text="Profile" />
+        android:text="Profile"
+        android:textColor="@color/md_theme_onPrimary"
+        android:backgroundTint="@color/md_theme_primary"/>
 
     <!-- Fragment Container -->
 
