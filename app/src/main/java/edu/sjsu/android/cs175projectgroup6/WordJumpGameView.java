@@ -4,52 +4,73 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.Random;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import androidx.appcompat.app.AlertDialog;
 
 public class WordJumpGameView extends View {
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint platformPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final QuestionManager qm;
     private final Random random = new Random();
-    private boolean swapOptions;
-    private String leftOptionText, rightOptionText;
+
+    // Option texts and ordering
+    private String leftOptionText, middleOptionText, rightOptionText;
+    private int[] optionOrder;
+
+    // Platform bitmaps and rects
     private Bitmap cloudBitmap;
-    private RectF groundRect;            // fixed reference “ground”
-    private RectF basePlatformRect;      // current platform the ball bounces on
-    private RectF leftPlatformRect, rightPlatformRect;
-    private Bitmap leftPlatformBitmap, rightPlatformBitmap, basePlatformBitmap;
+    private RectF groundRect;
+    private RectF basePlatformRect;
+    private RectF leftPlatformRect, middlePlatformRect, rightPlatformRect;
+    private Bitmap leftPlatformBitmap, middlePlatformBitmap, rightPlatformBitmap, basePlatformBitmap;
+
+    // Duck animation
+    private AnimationDrawable animatedJump;
     private float duckX, duckY;
     private float restingDuckX, restingDuckY;
-    private AnimationDrawable animatedJump;
     private int duckWidth, duckHeight;
-    private ValueAnimator idleAnimator, jumpAnimator, shiftAnimator;
-    private boolean isJumping = false;
 
+    // Animators
+    private ValueAnimator idleAnimator;
+    private ValueAnimator jumpAnimator;
+    private ValueAnimator shiftAnimator;
+    private boolean isJumping = false;
+    private boolean paused = false;
+
+    // Animation timing
     private long lastFrameTime = 0;
     private int currentFrame = 0;
     private long frameDuration = 100;
 
+    // Layout constants
     private static final float GROUND_HEIGHT   = 100f;
     private static final float PLATFORM_HEIGHT = 280f;
     private static final float PLATFORM_GAP    = 300f;
     private static final float ARC_HEIGHT      = 200f;
     private static final float IDLE_AMPLITUDE  = 30f;
 
+    /** Callback interface to request a restart */
     public interface GameEventListener {
         void onRequestRestart();
     }
-
     private GameEventListener listener;
 
     public void setGameEventListener(GameEventListener listener) {
@@ -60,71 +81,88 @@ public class WordJumpGameView extends View {
         super(ctx);
         qm = new QuestionManager(ctx);
 
-        platformPaint.setColor(0xff64C864); // rgb(100,200,100)
+        platformPaint.setColor(0xff64C864);
         textPaint.setColor(0xff000000);
         textPaint.setTextSize(48);
         textPaint.setTextAlign(Paint.Align.CENTER);
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+    public void pause() {
+        paused = true;
+        if (idleAnimator != null) idleAnimator.cancel();
+        if (shiftAnimator != null) shiftAnimator.cancel();
+        if (jumpAnimator != null) jumpAnimator.cancel();
+    }
+
+    public void resume() {
+        paused = false;
+        startIdleBounce();
+        invalidate();
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w,h,oldw,oldh);
 
-        // CLOUD
+        // Cloud bitmap
         Bitmap originalCloud = BitmapFactory.decodeResource(getResources(), R.drawable.cloud);
         int targetWidth = getWidth() - 1;
         float aspectRatio = (float) originalCloud.getHeight() / originalCloud.getWidth();
         int targetHeight = (int) (targetWidth * aspectRatio);
         cloudBitmap = Bitmap.createScaledBitmap(originalCloud, targetWidth, targetHeight, true);
 
-        // GROUND
+        // Ground & base platform
         groundRect = new RectF(0, h - GROUND_HEIGHT, w, h);
         basePlatformRect = new RectF(groundRect);
 
-        // DUCK
-        ImageView dummyImageView = new ImageView(getContext());
-        dummyImageView.setBackgroundResource(R.drawable.duck_right_animation);
-        animatedJump = (AnimationDrawable) dummyImageView.getBackground();
-        animatedJump.setBounds(0, 0, animatedJump.getIntrinsicWidth(), animatedJump.getIntrinsicHeight());
+        // Duck animation setup
+        View dummy = new View(getContext());
+        dummy.setBackgroundResource(R.drawable.duck_right_animation);
+        animatedJump = (AnimationDrawable) dummy.getBackground();
+        animatedJump.setBounds(0,0,animatedJump.getIntrinsicWidth(),animatedJump.getIntrinsicHeight());
         animatedJump.start();
-
         float desiredH = GROUND_HEIGHT * 3.0f;
         float scale = desiredH / animatedJump.getIntrinsicHeight();
         duckWidth = (int)(animatedJump.getIntrinsicWidth() * scale);
         duckHeight = (int)(animatedJump.getIntrinsicHeight() * scale);
 
-        animatedJump.setBounds(0, 0, animatedJump.getIntrinsicWidth(), animatedJump.getIntrinsicHeight());
-        animatedJump.start();
-
+        // Compute option platform positions & texts
         computeAnswerPlatforms(w);
-        randomizeOptions();  // set initial option placement
+        randomizeOptions();
 
-        restingDuckX = basePlatformRect.centerX() - duckWidth / 2f;
+        // Initial duck position
+        restingDuckX = basePlatformRect.centerX() - duckWidth/2f;
         restingDuckY = basePlatformRect.top - duckHeight;
         duckX = restingDuckX;
         duckY = restingDuckY;
-
         startIdleBounce();
 
         // Load platform images
         Bitmap rawPlatform = BitmapFactory.decodeResource(getResources(), R.drawable.platform_base);
-        float width = basePlatformRect.width();    // or fixed width
-        float height = PLATFORM_HEIGHT;
-        basePlatformBitmap = Bitmap.createScaledBitmap(rawPlatform, (int)width, (int)height, true);
+        float baseW = basePlatformRect.width();
+        float baseH = PLATFORM_HEIGHT;
+        basePlatformBitmap = Bitmap.createScaledBitmap(rawPlatform, (int)baseW, (int)baseH, true);
 
         leftPlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_branch_left);
+        middlePlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.platform_base);
         rightPlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_branch_right);
 
-        // Scale images to match the platform rects
-        // however we have to make sure they're already initialized
-
+        // SCALE TO MATCH PLATFORM RECTS
         leftPlatformBitmap = Bitmap.createScaledBitmap(
                 leftPlatformBitmap,
                 (int) leftPlatformRect.width(),
                 (int) leftPlatformRect.height(),
                 true
         );
-
+        middlePlatformBitmap = Bitmap.createScaledBitmap(
+                middlePlatformBitmap,
+                (int) middlePlatformRect.width(),
+                (int) middlePlatformRect.height(),
+                true
+        );
         rightPlatformBitmap = Bitmap.createScaledBitmap(
                 rightPlatformBitmap,
                 (int) rightPlatformRect.width(),
@@ -134,25 +172,31 @@ public class WordJumpGameView extends View {
     }
 
     private void computeAnswerPlatforms(int viewWidth) {
-        float m = viewWidth * 0.10f;
-        float pw= viewWidth * 0.35f;
+        float seg = viewWidth / 3f;
         float topY = basePlatformRect.top - PLATFORM_GAP - PLATFORM_HEIGHT;
-
-        leftPlatformRect  = new RectF(0, topY, m+pw,        topY+PLATFORM_HEIGHT);
-        rightPlatformRect = new RectF(viewWidth-m-pw, topY,
-                viewWidth,    topY+PLATFORM_HEIGHT);
+        leftPlatformRect   = new RectF(0,       topY, seg,        topY + PLATFORM_HEIGHT);
+        middlePlatformRect = new RectF(seg,     topY, seg * 2,    topY + PLATFORM_HEIGHT);
+        rightPlatformRect  = new RectF(seg * 2, topY, viewWidth,   topY + PLATFORM_HEIGHT);
     }
 
     private void randomizeOptions() {
         Question q = qm.getCurrent();
         if (q == null) return;
-        swapOptions = random.nextBoolean();
-        if (!swapOptions) {
-            leftOptionText  = q.getOptionA();
-            rightOptionText = q.getOptionB();
-        } else {
-            leftOptionText  = q.getOptionB();
-            rightOptionText = q.getOptionA();
+        // shuffle mapping of 0=A,1=B,2=C to slots
+        List<Integer> order = Arrays.asList(0,1,2);
+        Collections.shuffle(order);
+        optionOrder = new int[]{order.get(0), order.get(1), order.get(2)};
+        leftOptionText   = getTextFor(q, optionOrder[0]);
+        middleOptionText = getTextFor(q, optionOrder[1]);
+        rightOptionText  = getTextFor(q, optionOrder[2]);
+    }
+
+    private String getTextFor(Question q, int idx) {
+        switch (idx) {
+            case 0: return q.getOptionA();
+            case 1: return q.getOptionB();
+            case 2: return q.getOptionC();
+            default: return "";
         }
     }
 
@@ -162,9 +206,9 @@ public class WordJumpGameView extends View {
         idleAnimator.setDuration(800);
         idleAnimator.setRepeatCount(ValueAnimator.INFINITE);
         idleAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        idleAnimator.addUpdateListener(a -> {
+        idleAnimator.addUpdateListener(anim -> {
             if (!isJumping) {
-                float f = (float)a.getAnimatedValue();
+                float f = (float) anim.getAnimatedValue();
                 duckY = restingDuckY - (IDLE_AMPLITUDE * f);
                 invalidate();
             }
@@ -174,49 +218,39 @@ public class WordJumpGameView extends View {
 
     @Override
     protected void onDraw(Canvas c) {
+        if (paused) return;
         super.onDraw(c);
-
-        if (cloudBitmap != null) {
-            c.drawBitmap(cloudBitmap, 0, 120, null);
-        }
+        if (cloudBitmap != null) c.drawBitmap(cloudBitmap, 0, 120, null);
 
         Question q = qm.getCurrent();
         if (q != null) {
-            float promptY = getHeight() * 0.3f;
+            float promptY = getHeight()*0.3f;
             c.drawText(q.getPrompt(), getWidth()/2f, promptY, textPaint);
         }
 
-        // draw base platform
-//        c.drawRect(basePlatformRect, platformPaint);
-        if (basePlatformBitmap != null) {
-            c.drawBitmap(basePlatformBitmap, basePlatformRect.left, basePlatformRect.top, null);
-        }
+        // Draw base and answer platforms
+        if (basePlatformBitmap != null) c.drawBitmap(basePlatformBitmap,
+                basePlatformRect.left, basePlatformRect.top, null);
         if (q == null) return;
+        c.drawBitmap(leftPlatformBitmap,   leftPlatformRect.left,   leftPlatformRect.top,   null);
+        c.drawBitmap(middlePlatformBitmap, middlePlatformRect.left, middlePlatformRect.top, null);
+        c.drawBitmap(rightPlatformBitmap,  rightPlatformRect.left,  rightPlatformRect.top,  null);
+        float textY = leftPlatformRect.centerY() -
+                (textPaint.descent() + textPaint.ascent())/2f;
+        c.drawText(leftOptionText,   leftPlatformRect.centerX(),   textY, textPaint);
+        c.drawText(middleOptionText, middlePlatformRect.centerX(), textY, textPaint);
+        c.drawText(rightOptionText,  rightPlatformRect.centerX(),  textY, textPaint);
 
-        // Draw left and right platforms
-//        c.drawRect(leftPlatformRect,  platformPaint);
-//        c.drawRect(rightPlatformRect, platformPaint);
-        c.drawBitmap(leftPlatformBitmap, leftPlatformRect.left, leftPlatformRect.top, null);
-        c.drawBitmap(rightPlatformBitmap, rightPlatformRect.left, rightPlatformRect.top, null);
-
-        float textY = leftPlatformRect.centerY()
-                - (textPaint.descent() + textPaint.ascent())/2f;
-        // Draw randomized option texts
-        c.drawText(leftOptionText,  leftPlatformRect.centerX(),  textY, textPaint);
-        c.drawText(rightOptionText, rightPlatformRect.centerX(), textY, textPaint);
-
+        // Draw duck frame
         c.save();
         c.translate(duckX, duckY);
-        c.scale((float)duckWidth / animatedJump.getIntrinsicWidth(),
-                (float)duckHeight / animatedJump.getIntrinsicHeight());
+        c.scale((float)duckWidth/animatedJump.getIntrinsicWidth(),
+                (float)duckHeight/animatedJump.getIntrinsicHeight());
         animatedJump.draw(c);
-
-        // Frames for the animation
         long now = System.currentTimeMillis();
-
         if (now - lastFrameTime >= frameDuration) {
             animatedJump.selectDrawable(currentFrame);
-            currentFrame = (currentFrame + 1) % animatedJump.getNumberOfFrames();
+            currentFrame = (currentFrame+1) % animatedJump.getNumberOfFrames();
             lastFrameTime = now;
         }
         c.restore();
@@ -224,33 +258,34 @@ public class WordJumpGameView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if (isJumping || e.getAction() != MotionEvent.ACTION_DOWN) return true;
+        if (paused || isJumping || e.getAction() != MotionEvent.ACTION_DOWN) return true;
 
         float x = e.getX(), y = e.getY();
         boolean hitL = leftPlatformRect.contains(x,y);
+        boolean hitM = middlePlatformRect.contains(x,y);
         boolean hitR = rightPlatformRect.contains(x,y);
-        if (!hitL && !hitR) return true;
+        if (!hitL && !hitM && !hitR) return true;
 
         idleAnimator.cancel();
         isJumping = true;
 
         float startX = duckX, startY = duckY;
-        RectF target = hitL ? leftPlatformRect : rightPlatformRect;
+        RectF target;
+        int displayIndex;
+        if (hitL)      { target = leftPlatformRect;   displayIndex = 0; }
+        else if (hitM) { target = middlePlatformRect; displayIndex = 1; }
+        else           { target = rightPlatformRect;  displayIndex = 2; }
         float endX = target.centerX() - duckWidth/2f;
         float endY = target.top       - duckHeight;
-
-        // Map tap to the correct question index based on swap
-        int selectedIndex = hitL
-                ? (swapOptions ? 1 : 0)
-                : (swapOptions ? 0 : 1);
+        int selectedIndex = optionOrder[displayIndex];
 
         jumpAnimator = ValueAnimator.ofFloat(0f,1f);
         jumpAnimator.setDuration(600);
-        jumpAnimator.addUpdateListener(a -> {
-            float f = (float)a.getAnimatedValue();
+        jumpAnimator.addUpdateListener(anim -> {
+            float f = (float) anim.getAnimatedValue();
             duckX = startX + f*(endX - startX);
             float linY = startY + f*(endY - startY);
-            float arc  = 4 * ARC_HEIGHT * f * (1 - f);
+            float arc  = 4 * ARC_HEIGHT * f * (1-f);
             duckY = linY - arc;
             invalidate();
         });
@@ -259,61 +294,89 @@ public class WordJumpGameView extends View {
             public void onAnimationEnd(Animator a) {
                 boolean correct = qm.answer(selectedIndex);
                 if (!correct) {
-                    handleGameOver();
-                    return;
-                }
-
-                // Prepare next question options
-                randomizeOptions();
-
-                basePlatformBitmap = hitL ? leftPlatformBitmap : rightPlatformBitmap;
-
-                float initT = target.top, initB = target.bottom;
-                float finalT= groundRect.top, finalB = groundRect.bottom;
-                float L = target.left, R = target.right;
-                int vw = getWidth();
-
-                shiftAnimator = ValueAnimator.ofFloat(0f,1f);
-                shiftAnimator.setDuration(500);
-                shiftAnimator.addUpdateListener(sa -> {
-                    float f2 = (float)sa.getAnimatedValue();
-                    float newT = initT + f2*(finalT - initT);
-                    float newB = initB + f2*(finalB - initB);
-                    basePlatformRect = new RectF(L, newT, R, newB);
-
-                    computeAnswerPlatforms(vw);
-
-                    restingDuckX = basePlatformRect.centerX() - duckWidth/2f;
-                    restingDuckY = basePlatformRect.top       - duckHeight;
-                    duckX = restingDuckX;
-                    duckY = restingDuckY;
-                    invalidate();
-                });
-                shiftAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator sa) {
-                        isJumping = false;
-                        startIdleBounce();
+                    paused = true;
+                    showGameOverDialog();
+                } else {
+                    // correct answer flow
+                    randomizeOptions();
+                    switch(displayIndex) {
+                        case 0: basePlatformBitmap = leftPlatformBitmap;   break;
+                        case 1: basePlatformBitmap = middlePlatformBitmap; break;
+                        default: basePlatformBitmap = rightPlatformBitmap; break;
                     }
-                });
-                shiftAnimator.start();
+                    // start platform shift animation
+                    float initT = target.top, initB = target.bottom;
+                    float finalT = groundRect.top, finalB = groundRect.bottom;
+                    float L = target.left, R = target.right;
+                    int vw = getWidth();
+                    shiftAnimator = ValueAnimator.ofFloat(0f,1f);
+                    shiftAnimator.setDuration(500);
+                    shiftAnimator.addUpdateListener(sa -> {
+                        float f2 = (float) sa.getAnimatedValue();
+                        basePlatformRect = new RectF(L,
+                                initT + f2*(finalT - initT),
+                                R,
+                                initB + f2*(finalB - initB));
+                        computeAnswerPlatforms(vw);
+                        restingDuckX = basePlatformRect.centerX() - duckWidth/2f;
+                        restingDuckY = basePlatformRect.top - duckHeight;
+                        duckX = restingDuckX;
+                        duckY = restingDuckY;
+                        invalidate();
+                    });
+                    shiftAnimator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator sa) {
+                            isJumping = false;
+                            startIdleBounce();
+                        }
+                    });
+                    shiftAnimator.start();
+                }
             }
         });
         jumpAnimator.start();
         return true;
     }
 
-    // Call this when restart is needed
-    private void requestRestart() {
-        if (listener != null) {
-            listener.onRequestRestart();
-        }
+    private void showGameOverDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+        // Custom centered title
+        TextView title = new TextView(getContext());
+        title.setText("Game Over");
+        title.setGravity(Gravity.CENTER);
+        title.setTextSize(20);
+        int padding = (int) (20 * getResources().getDisplayMetrics().density);
+        title.setPadding(padding, padding, padding, padding);
+        builder.setCustomTitle(title);
+
+        // Centered message
+        builder.setMessage("You chose the wrong answer.");
+        builder.setCancelable(false);
+
+        // Try Again button
+        builder.setPositiveButton("Try Again", (dlg, which) -> {
+            if (listener != null) listener.onRequestRestart();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Center the message text
+        TextView msg = dialog.findViewById(android.R.id.message);
+        if (msg != null) msg.setGravity(Gravity.CENTER);
+
+        // Center the button text
+        Button btn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+        if (btn != null) btn.setGravity(Gravity.CENTER);
     }
 
-    // Example: call this when player loses
+    private void requestRestart() {
+        if (listener != null) listener.onRequestRestart();
+    }
+
     private void handleGameOver() {
-        // TODO tree branch animation
-        // TODO current score and high score screen (we can pass this through the requestRestart?)
         requestRestart();
     }
 }

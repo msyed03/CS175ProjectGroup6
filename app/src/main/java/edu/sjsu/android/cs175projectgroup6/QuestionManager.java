@@ -26,12 +26,13 @@ public class QuestionManager {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\\|");
-                if (parts.length == 4) {
+                if (parts.length == 5) {
                     String prompt = parts[0];
                     String optA   = parts[1];
                     String optB   = parts[2];
-                    int correct   = Integer.parseInt(parts[3]);
-                    questions.add(new Question(prompt, optA, optB, correct));
+                    String optC   = parts[3];
+                    int correct   = Integer.parseInt(parts[4]);
+                    questions.add(new Question(prompt, optA, optB, optC, correct));
                 }
             }
         } catch (IOException e) {
