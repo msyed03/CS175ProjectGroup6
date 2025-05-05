@@ -7,4 +7,6 @@
     <string name="pronounce_text">Pronounce this word .......</string>
     <string name="speak_description">Speak Button</string>
     <string name="bird">Bird</string>
+    <string name="pause">pause</string>
+    <string name="exit">exit</string>
 </resources>

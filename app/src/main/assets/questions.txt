@@ -1,30 +1,30 @@
-Yo ____ (poder) nadar en la piscina.|puedo|puedes|0
-Tú ____ (querer) aprender español.|quieres|quiere|0
-Él ____ (saber) la respuesta.|sabe|sabes|0
-Nosotros ____ (venir) al restaurante.|venimos|vienen|0
-Vosotras ____ (escribir) poemas.|escribís|escriben|0
-Ellas ____ (leer) las noticias.|leen|lee|0
-Usted ____ (tener) una pregunta.|tiene|tienes|0
-Yo ____ (decir) la verdad.|digo|dice|0
-Tú ____ (hacer) ejercicio.|haces|hace|0
-Él ____ (ir) al trabajo cada día.|va|vas|0
-Nosotros ____ (ver) el atardecer.|vemos|ven|0
-Vosotros ____ (conocer) a mis amigos.|conocéis|conoce|0
-Ellos ____ (dar) regalos en Navidad.|dan|dais|0
-Yo ____ (traer) el libro.|traigo|traes|0
-Tú ____ (venir) con nosotros.|vienes|vienen|0
-Ella ____ (dar) una conferencia.|da|das|0
-Nosotras ____ (estar) en casa.|estamos|están|0
-Vosotros ____ (decidir) pronto.|decidís|deciden|0
-Ellas ____ (bailar) toda la noche.|bailan|baila|0
-Ustedes ____ (cocinar) la cena.|cocinan|cocina|0
-Yo ____ (llenar) el formulario.|lleno|llenas|0
-Tú ____ (sugerir) una idea.|sugieres|sugiere|0
-Él ____ (seguir) las instrucciones.|sigue|sigues|0
-Nosotros ____ (preferir) té.|preferimos|prefieren|0
-Vosotros ____ (repetir) la pregunta.|repetís|repite|0
-Ellos ____ (dormir) temprano.|duermen|duerme|0
-Yo ____ (oír) música.|oigo|oyes|0
-Tú ____ (concluir) el proyecto.|concluyes|concluye|0
-Él ____ (construir) una casa.|construye|construyes|0
-Nosotros ____ (incluir) a todos.|incluimos|incluyen|0
+Yo ____ (poder) nadar en la piscina.|puedo|puedes|poder|0
+Tú ____ (querer) aprender español.|quieres|quiere|querer|0
+Él ____ (saber) la respuesta.|sabe|sabes|saber|0
+Nosotros ____ (venir) al restaurante.|venimos|vienen|venir|0
+Vosotras ____ (escribir) poemas.|escribís|escriben|escribir|0
+Ellas ____ (leer) las noticias.|leen|lee|leer|0
+Usted ____ (tener) una pregunta.|tiene|tienes|tener|0
+Yo ____ (decir) la verdad.|digo|dice|decir|0
+Tú ____ (hacer) ejercicio.|haces|hace|hacer|0
+Él ____ (ir) al trabajo cada día.|va|vas|ir|0
+Nosotros ____ (ver) el atardecer.|vemos|ven|ver|0
+Vosotros ____ (conocer) a mis amigos.|conocéis|conoce|conocer|0
+Ellos ____ (dar) regalos en Navidad.|dan|dais|dar|0
+Yo ____ (traer) el libro.|traigo|traes|traer|0
+Tú ____ (venir) con nosotros.|vienes|vienen|venir|0
+Ella ____ (dar) una conferencia.|da|das|dar|0
+Nosotras ____ (estar) en casa.|estamos|están|estar|0
+Vosotros ____ (decidir) pronto.|decidís|deciden|decidir|0
+Ellas ____ (bailar) toda la noche.|bailan|baila|bailar|0
+Ustedes ____ (cocinar) la cena.|cocinan|cocina|cocinar|0
+Yo ____ (llenar) el formulario.|lleno|llenas|llenar|0
+Tú ____ (sugerir) una idea.|sugieres|sugiere|sugerir|0
+Él ____ (seguir) las instrucciones.|sigue|sigues|seguir|0
+Nosotros ____ (preferir) té.|preferimos|prefieren|preferir|0
+Vosotros ____ (repetir) la pregunta.|repetís|repite|repetir|0
+Ellos ____ (dormir) temprano.|duermen|duerme|dormir|0
+Yo ____ (oír) música.|oigo|oyes|oír|0
+Tú ____ (concluir) el proyecto.|concluyes|concluye|concluir|0
+Él ____ (construir) una casa.|construye|construyes|construir|0
+Nosotros ____ (incluir) a todos.|incluimos|incluyen|incluir|0
