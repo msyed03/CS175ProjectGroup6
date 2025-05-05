@@ -35,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        binding.profileFragment.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivity(intent);
+        });
+
 //        // Hide fragment container until a game is selected
 //        binding.flFragment.setVisibility(View.GONE);
 //
