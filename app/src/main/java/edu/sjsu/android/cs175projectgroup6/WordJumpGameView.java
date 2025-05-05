@@ -62,7 +62,7 @@ public class WordJumpGameView extends View {
 
     // Layout constants
     private static final float GROUND_HEIGHT   = 100f;
-    private static final float PLATFORM_HEIGHT = 280f;
+    private static final float PLATFORM_HEIGHT = 220f;
     private static final float PLATFORM_GAP    = 300f;
     private static final float ARC_HEIGHT      = 200f;
     private static final float IDLE_AMPLITUDE  = 30f;
@@ -147,7 +147,7 @@ public class WordJumpGameView extends View {
         basePlatformBitmap = Bitmap.createScaledBitmap(rawPlatform, (int)baseW, (int)baseH, true);
 
         leftPlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_branch_left);
-        middlePlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.platform_base);
+        middlePlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_branch_middle);
         rightPlatformBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_branch_right);
 
         // SCALE TO MATCH PLATFORM RECTS
