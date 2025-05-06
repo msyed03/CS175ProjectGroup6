@@ -5,6 +5,7 @@
 <!--</resources>-->
 <resources>
     <color name="md_theme_primary">#4C662B</color>
+    <color name="black">#000000</color>
     <color name="md_theme_onPrimary">#FFFFFF</color>
     <color name="md_theme_primaryContainer">#CDEDA3</color>
     <color name="md_theme_onPrimaryContainer">#354E15</color>
