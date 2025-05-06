@@ -161,7 +161,7 @@ public class PronounceThisWord extends Fragment {
                 Collections.singletonList(Shape.Circle.INSTANCE),
                 3000L,
                 true,
-                new Position.Relative(0.5, 0.0), // spawn from top
+                new Position.between(new Position.Relative(0.0, 0.0),new Position.Relative(1.0, 0.0)), // spawn from top
                 0,
                 Rotation.Companion.enabled(),
                 new Emitter(3, TimeUnit.SECONDS).perSecond(100)
