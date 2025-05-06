@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".PronounceThisWord"
-    android:background="#A8DADC">
+    android:background="@color/md_theme_surfaceVariant">
 
     <ImageView
         android:id="@+id/wall"
