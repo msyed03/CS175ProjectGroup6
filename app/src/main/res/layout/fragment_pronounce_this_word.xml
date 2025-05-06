@@ -80,4 +80,12 @@
         android:textSize="30sp"
         android:textColor="@color/black"
         android:layout_gravity="top|center"/>
+    <ImageButton
+        android:id="@+id/button_exit"
+        style="?attr/borderlessButtonStyle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="12dp"
+        android:contentDescription="@string/exit"
+        android:src="@android:drawable/ic_delete" />
 </FrameLayout>

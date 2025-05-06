@@ -26,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -124,7 +125,17 @@ public class PronounceThisWord extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_pronounce_this_word, container, false);
+        View root = inflater.inflate(R.layout.fragment_pronounce_this_word, container, false);
+
+        //return inflater.inflate(R.layout.fragment_pronounce_this_word, container, false);
+
+        // Exit
+        ImageButton exitBtn = root.findViewById(R.id.button_exit);
+        exitBtn.setOnClickListener(v -> {
+            requireActivity().finish();
+        });
+
+        return root;
     }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstances) {
@@ -182,16 +193,40 @@ public class PronounceThisWord extends Fragment {
             Toast.makeText(context, "No file to play", Toast.LENGTH_SHORT).show();
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1001) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startRecording();
+            } else {
+                Toast.makeText(context,
+                        "Audio permission is required to record",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
     private void startRecording() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, 1001);
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(),
+                    new String[]{ Manifest.permission.RECORD_AUDIO }, 1001);
             return;
+        }
+
+        // ← Always create the recorder, regardless of API level
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mediaRecorder = new MediaRecorder(context);
+        } else {
+            mediaRecorder = new MediaRecorder();
         }
         File outputDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         filename = new File(outputDir, "recorded_audio.m4a").getAbsolutePath();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            mediaRecorder=new MediaRecorder(context);
-        }
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
@@ -229,7 +264,7 @@ public class PronounceThisWord extends Fragment {
                 Log.e("TranscribeError", "File does not exist: " + filename);
                 return;
             }
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8000/transcribe").openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL("http://130.65.254.12:8001/transcribe").openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW");
