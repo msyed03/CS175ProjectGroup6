@@ -59,8 +59,7 @@ public class WordJump extends Fragment implements WordJumpGameView.GameEventList
         // Exit
         ImageButton exitBtn = root.findViewById(R.id.button_exit);
         exitBtn.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager().popBackStack();
-            requireActivity().findViewById(R.id.flFragment).setVisibility(View.GONE);
+            requireActivity().finish();
         });
 
         return root;
@@ -83,7 +82,7 @@ public class WordJump extends Fragment implements WordJumpGameView.GameEventList
         // replace the FL container with a fresh fragment
         FragmentTransaction ft = requireActivity()
                 .getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.flFragment, new WordJump());
+        ft.replace(R.id.fragmentContainer, new WordJump());
         ft.commit();
     }
 }

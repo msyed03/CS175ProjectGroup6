@@ -9,4 +9,6 @@
     <string name="bird">Bird</string>
     <string name="pause">pause</string>
     <string name="exit">exit</string>
+    <string name="back">back</string>
+    <string name="profile">Profile</string>
 </resources>

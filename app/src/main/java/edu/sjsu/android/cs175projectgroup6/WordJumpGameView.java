@@ -5,12 +5,14 @@ import android.animation.ValueAnimator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
+import android.os.CountDownTimer;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -67,6 +69,32 @@ public class WordJumpGameView extends View {
     private static final float ARC_HEIGHT      = 200f;
     private static final float IDLE_AMPLITUDE  = 30f;
 
+    private CountDownTimer countDownTimer;
+    private long                timeLeftMillis = 30000;
+    private int                 score          = 0;
+    private boolean             gameOver       = false;
+
+    private void initGame() {
+        score          = 0;
+        timeLeftMillis = 30000;
+        gameOver       = false;
+
+        countDownTimer = new CountDownTimer(timeLeftMillis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                timeLeftMillis = millisUntilFinished;
+                invalidate();            // redraw to update timer
+            }
+            @Override
+            public void onFinish() {
+                timeLeftMillis = 0;
+                gameOver       = true;
+                paused         = true;
+                showGameOverDialog();
+            }
+        }.start();
+    }
+
     /** Callback interface to request a restart */
     public interface GameEventListener {
         void onRequestRestart();
@@ -80,11 +108,12 @@ public class WordJumpGameView extends View {
     public WordJumpGameView(Context ctx) {
         super(ctx);
         qm = new QuestionManager(ctx);
-
         platformPaint.setColor(0xff64C864);
         textPaint.setColor(0xff000000);
         textPaint.setTextSize(48);
         textPaint.setTextAlign(Paint.Align.CENTER);
+
+        initGame();
     }
 
     public boolean isPaused() {
@@ -92,14 +121,23 @@ public class WordJumpGameView extends View {
     }
     public void pause() {
         paused = true;
-        if (idleAnimator != null) idleAnimator.cancel();
+        if (idleAnimator != null)  idleAnimator.cancel();
         if (shiftAnimator != null) shiftAnimator.cancel();
-        if (jumpAnimator != null) jumpAnimator.cancel();
+        if (jumpAnimator != null)  jumpAnimator.cancel();
+        if (countDownTimer != null) countDownTimer.cancel();
     }
 
     public void resume() {
         paused = false;
         startIdleBounce();
+        // restart timer from where we left off
+        countDownTimer = new CountDownTimer(timeLeftMillis, 1000) {
+            public void onTick(long m) { timeLeftMillis = m; invalidate(); }
+            public void onFinish() {
+                timeLeftMillis = 0; gameOver = true; paused = true;
+                showGameOverDialog();
+            }
+        }.start();
         invalidate();
     }
 
@@ -220,6 +258,13 @@ public class WordJumpGameView extends View {
     protected void onDraw(Canvas c) {
         if (paused) return;
         super.onDraw(c);
+        // draw current score (left) and time remaining (right)
+        float yPos = getHeight() * 0.12f;
+        c.drawText("Score: " + score,
+                getWidth() * 0.2f, yPos, textPaint);
+        c.drawText("Time: " + (timeLeftMillis / 1000),
+                getWidth() * 0.8f, yPos, textPaint);
+
         if (cloudBitmap != null) c.drawBitmap(cloudBitmap, 0, 120, null);
 
         Question q = qm.getCurrent();
@@ -298,6 +343,7 @@ public class WordJumpGameView extends View {
                     showGameOverDialog();
                 } else {
                     // correct answer flow
+                    score += 50;
                     randomizeOptions();
                     switch(displayIndex) {
                         case 0: basePlatformBitmap = leftPlatformBitmap;   break;
@@ -340,36 +386,44 @@ public class WordJumpGameView extends View {
     }
 
     private void showGameOverDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        if (countDownTimer != null) countDownTimer.cancel();
 
-        // Custom centered title
+        // persist high‐score
+        SharedPreferences prefs = getContext()
+                .getSharedPreferences("WordJumpPrefs", Context.MODE_PRIVATE);
+        int prevHigh = prefs.getInt("highscore", 0);
+        boolean isNew    = score > prevHigh;
+        if (isNew) {
+            prefs.edit().putInt("highscore", score).apply();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        // title
         TextView title = new TextView(getContext());
         title.setText("Game Over");
         title.setGravity(Gravity.CENTER);
         title.setTextSize(20);
-        int padding = (int) (20 * getResources().getDisplayMetrics().density);
-        title.setPadding(padding, padding, padding, padding);
+        int pad = (int)(20 * getResources().getDisplayMetrics().density);
+        title.setPadding(pad,pad,pad,pad);
         builder.setCustomTitle(title);
 
-        // Centered message
-        builder.setMessage("You chose the wrong answer.");
-        builder.setCancelable(false);
-
-        // Try Again button
-        builder.setPositiveButton("Try Again", (dlg, which) -> {
-            if (listener != null) listener.onRequestRestart();
-        });
+        // message
+        String msg = (gameOver ? "Time's up!\n" : "Wrong answer!\n")
+                + "Your score: " + score
+                + (isNew   ? "\n🎉 New High Score!" : "");
+        builder.setMessage(msg)
+                .setCancelable(false)
+                .setPositiveButton("Try Again", (d,w) -> {
+                    if (listener!=null) listener.onRequestRestart();
+                });
 
         AlertDialog dialog = builder.create();
         dialog.show();
-
-        // Center the message text
-        TextView msg = dialog.findViewById(android.R.id.message);
-        if (msg != null) msg.setGravity(Gravity.CENTER);
-
-        // Center the button text
+        // center text & button
+        TextView tv = dialog.findViewById(android.R.id.message);
+        if (tv!=null) tv.setGravity(Gravity.CENTER);
         Button btn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        if (btn != null) btn.setGravity(Gravity.CENTER);
+        if (btn!=null) btn.setGravity(Gravity.CENTER);
     }
 
     private void requestRestart() {
