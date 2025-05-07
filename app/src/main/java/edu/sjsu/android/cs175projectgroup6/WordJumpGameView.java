@@ -29,6 +29,7 @@ import androidx.appcompat.app.AlertDialog;
 
 public class WordJumpGameView extends View {
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint answerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint platformPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final QuestionManager qm;
     private final Random random = new Random();
@@ -112,6 +113,10 @@ public class WordJumpGameView extends View {
         textPaint.setColor(0xff000000);
         textPaint.setTextSize(48);
         textPaint.setTextAlign(Paint.Align.CENTER);
+
+        answerPaint.setColor(getResources().getColor(R.color.md_theme_background_mediumContrast));
+        answerPaint.setTextSize(48);
+        answerPaint.setTextAlign(Paint.Align.CENTER);
 
         initGame();
     }
@@ -281,10 +286,10 @@ public class WordJumpGameView extends View {
         c.drawBitmap(middlePlatformBitmap, middlePlatformRect.left, middlePlatformRect.top, null);
         c.drawBitmap(rightPlatformBitmap,  rightPlatformRect.left,  rightPlatformRect.top,  null);
         float textY = leftPlatformRect.centerY() -
-                (textPaint.descent() + textPaint.ascent())/2f;
-        c.drawText(leftOptionText,   leftPlatformRect.centerX(),   textY, textPaint);
-        c.drawText(middleOptionText, middlePlatformRect.centerX(), textY, textPaint);
-        c.drawText(rightOptionText,  rightPlatformRect.centerX(),  textY, textPaint);
+                (answerPaint.descent() + answerPaint.ascent())/2f;
+        c.drawText(leftOptionText,   leftPlatformRect.centerX(),   textY, answerPaint);
+        c.drawText(middleOptionText, middlePlatformRect.centerX(), textY, answerPaint);
+        c.drawText(rightOptionText,  rightPlatformRect.centerX(),  textY, answerPaint);
 
         // Draw duck frame
         c.save();
