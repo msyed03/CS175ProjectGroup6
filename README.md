@@ -19,4 +19,5 @@ __With each correct answer and successful pronunciation, players increase their 
 
 # 🙋 Final Report / User Guide:
 1. [Final Report](https://docs.google.com/document/d/1tOJmGef24hIWfneGKtXDhhCW2bh3NuvutihO22s3jZo/edit?usp=sharing)
-2. [User Guide Video]()
+2. [User Guide Video](https://youtube.com/shorts/-F9y1S6cvFo)
+3. [Pronounce This Word Demo](https://youtube.com/shorts/QGp-ZrLX1qY?feature=share)
