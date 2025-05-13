@@ -6,6 +6,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
@@ -303,7 +304,13 @@ public class PronounceThisWord extends Fragment {
                     try {
                         if (textView.getText().toString().equalsIgnoreCase(jsonObject.getString("text"))) {
                             Log.d("Server Response", "Values are equal!");
-                            score++;
+//                            score++;
+                            score += 10;
+                            SharedPreferences prefs = context.getSharedPreferences("PronouncePrefs", Context.MODE_PRIVATE);
+                            int high = prefs.getInt("highscore", 0);
+                            if (score > high) {
+                                prefs.edit().putInt("highscore", score).apply();
+                            }
                             float holePositionX = ball.getX();
                             int screenWidth= Resources.getSystem().getDisplayMetrics().widthPixels;
                             float distanceX1 = -screenWidth;

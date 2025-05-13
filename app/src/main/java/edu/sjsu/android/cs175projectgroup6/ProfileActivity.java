@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ProfileActivity extends AppCompatActivity {
+    private int total = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,17 +25,25 @@ public class ProfileActivity extends AppCompatActivity {
         int high = prefs.getInt("highscore", 0);
         highScoreView.setText("Word Jump High Score: " + high);
 
+//        TextView pronounceScoreView = findViewById(R.id.tvPronounceHighScore);
+//        SharedPreferences pronouncePrefs = getSharedPreferences("PronouncePrefs", MODE_PRIVATE);
+//        int pronounceHigh = pronouncePrefs.getInt("highscore", 0);
+//        pronounceScoreView.setText("Pronounce This Word High Score: " + pronounceHigh);
+//
+//        total = high + pronounceHigh;
+        total = high;
+
         // Set duck image based on high score
         int duckImageRes;
-        if (high < 100) {
+        if (total < 100) {
             duckImageRes = R.drawable.duck_growth_1;
-        } else if (high < 200) {
+        } else if (total < 200) {
             duckImageRes = R.drawable.duck_growth_2;
-        } else if (high < 400) {
+        } else if (total < 400) {
             duckImageRes = R.drawable.duck_growth_3;
-        } else if (high < 600) {
+        } else if (total < 600) {
             duckImageRes = R.drawable.duck_growth_4;
-        } else if (high < 800) {
+        } else if (total < 800) {
             duckImageRes = R.drawable.duck_growth_5;
         } else {
             duckImageRes = R.drawable.duck_growth_6;

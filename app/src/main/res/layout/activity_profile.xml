@@ -44,6 +44,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profileTitle" />
 
+
+
     <ImageView
         android:id="@+id/duckGrowth"
         android:layout_width="341dp"
@@ -64,5 +66,17 @@
         app:layout_constraintBottom_toTopOf="@+id/tvHighScore"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tvPronounceHighScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Pronounce This Word Highscore: 0"
+        android:textColor="@color/md_theme_onBackground"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvHighScore" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
