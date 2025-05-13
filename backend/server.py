@@ -9,7 +9,7 @@ async def transcribe_audio(file:UploadFile=File(...)):
     tempfilename=f"temp_{uuid.uuid4()}.{file_ext}"
     with open(tempfilename,'wb') as buffer:
         shutil.copyfileobj(file.file, buffer)
-    result=model.transcribe(tempfilename)
+    result=model.transcribe(tempfilename,language="es")
     os.remove(tempfilename)
     text= result["text"].strip()
     translator=str.maketrans('','',string.punctuation)
