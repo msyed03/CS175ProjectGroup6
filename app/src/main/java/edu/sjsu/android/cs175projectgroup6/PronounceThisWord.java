@@ -257,7 +257,7 @@ public class PronounceThisWord extends Fragment {
                 Log.e("TranscribeError", "File does not exist: " + filename);
                 return;
             }
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://130.65.254.12:8001/transcribe").openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL("http://18.116.12.79:8000/transcribe").openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW");
