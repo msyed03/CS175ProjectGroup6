@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 import whisper,shutil,os,uuid
 app=FastAPI()
-model=whisper.load_model('base')
+model=whisper.load_model('medium')
 @app.post("/transcribe")
 async def transcribe_audio(file:UploadFile=File(...)):
     file_ext=file.filename.split(".")[-1]
