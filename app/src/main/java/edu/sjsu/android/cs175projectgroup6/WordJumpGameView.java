@@ -3,6 +3,7 @@ package edu.sjsu.android.cs175projectgroup6;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -75,25 +76,29 @@ public class WordJumpGameView extends View {
     private int                 score          = 0;
     private boolean             gameOver       = false;
 
-    private void initGame() {
-        score          = 0;
+    public void initGame() {
+        score = 0;
         timeLeftMillis = 30000;
-        gameOver       = false;
+        gameOver = false;
+        paused = false;
 
         countDownTimer = new CountDownTimer(timeLeftMillis, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 timeLeftMillis = millisUntilFinished;
-                invalidate();            // redraw to update timer
+                invalidate();
             }
+
             @Override
             public void onFinish() {
                 timeLeftMillis = 0;
-                gameOver       = true;
-                paused         = true;
+                gameOver = true;
+                paused = true;
                 showGameOverDialog();
             }
         }.start();
+        startIdleBounce(); // optional: bounce animation begins
+        invalidate();
     }
 
     /** Callback interface to request a restart */
@@ -117,8 +122,6 @@ public class WordJumpGameView extends View {
         answerPaint.setColor(getResources().getColor(R.color.md_theme_background_mediumContrast));
         answerPaint.setTextSize(48);
         answerPaint.setTextAlign(Paint.Align.CENTER);
-
-        initGame();
     }
 
     public boolean isPaused() {
@@ -390,45 +393,56 @@ public class WordJumpGameView extends View {
         return true;
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
     private void showGameOverDialog() {
         if (countDownTimer != null) countDownTimer.cancel();
 
-        // persist high‐score
-        SharedPreferences prefs = getContext()
-                .getSharedPreferences("WordJumpPrefs", Context.MODE_PRIVATE);
+        // Check context validity before showing dialog
+        Context context = getContext();
+        if (!(context instanceof Activity) || ((Activity) context).isFinishing() || ((Activity) context).isDestroyed()) {
+            return;
+        }
+
+        SharedPreferences prefs = context.getSharedPreferences("WordJumpPrefs", Context.MODE_PRIVATE);
         int prevHigh = prefs.getInt("highscore", 0);
-        boolean isNew    = score > prevHigh;
+        boolean isNew = score > prevHigh;
         if (isNew) {
             prefs.edit().putInt("highscore", score).apply();
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        // title
-        TextView title = new TextView(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        TextView title = new TextView(context);
         title.setText("Game Over");
         title.setGravity(Gravity.CENTER);
         title.setTextSize(20);
-        int pad = (int)(20 * getResources().getDisplayMetrics().density);
-        title.setPadding(pad,pad,pad,pad);
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        title.setPadding(pad, pad, pad, pad);
         builder.setCustomTitle(title);
 
-        // message
-        String msg = (gameOver ? "Time's up!\n" : "Wrong answer!\n")
-                + "Your score: " + score
-                + (isNew   ? "\n🎉 New High Score!" : "");
+        String msg = (gameOver ? "Time's up!\n" : "Wrong answer!\n") +
+                "Your score: " + score +
+                (isNew ? "\n🎉 New High Score!" : "");
+
         builder.setMessage(msg)
                 .setCancelable(false)
-                .setPositiveButton("Try Again", (d,w) -> {
-                    if (listener!=null) listener.onRequestRestart();
+                .setPositiveButton("Try Again", (d, w) -> {
+                    if (listener != null) listener.onRequestRestart();
                 });
 
         AlertDialog dialog = builder.create();
         dialog.show();
-        // center text & button
+
         TextView tv = dialog.findViewById(android.R.id.message);
-        if (tv!=null) tv.setGravity(Gravity.CENTER);
+        if (tv != null) tv.setGravity(Gravity.CENTER);
         Button btn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        if (btn!=null) btn.setGravity(Gravity.CENTER);
+        if (btn != null) btn.setGravity(Gravity.CENTER);
     }
 
     private void requestRestart() {

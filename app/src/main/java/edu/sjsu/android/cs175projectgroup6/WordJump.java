@@ -1,5 +1,6 @@
 package edu.sjsu.android.cs175projectgroup6;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import androidx.annotation.Nullable;
@@ -20,6 +21,8 @@ import android.widget.FrameLayout;
  */
 public class WordJump extends Fragment implements WordJumpGameView.GameEventListener {
     private WordJumpGameView gameView;
+    private AlertDialog pauseDialog;
+
     public WordJump() {
         // Required empty public constructor
     }
@@ -36,6 +39,8 @@ public class WordJump extends Fragment implements WordJumpGameView.GameEventList
         // inflate our new layout
         View root = inflater.inflate(R.layout.fragment_word_jump, container, false);
 
+        // show instructions before the game starts
+        showInstructionsDialog();
         // 1) add the GameView into the container
         FrameLayout gameContainer = root.findViewById(R.id.game_container);
         gameView = new WordJumpGameView(requireContext());
@@ -44,15 +49,18 @@ public class WordJump extends Fragment implements WordJumpGameView.GameEventList
 
         //Pause
         ImageButton pauseBtn = root.findViewById(R.id.button_pause);
+
         pauseBtn.setOnClickListener(v -> {
             if (gameView.isPaused()) {
                 gameView.resume();
-                // back to pause icon
                 pauseBtn.setImageResource(android.R.drawable.ic_media_pause);
+                if (pauseDialog != null && pauseDialog.isShowing()) {
+                    pauseDialog.dismiss();
+                }
             } else {
                 gameView.pause();
-                // show play icon
                 pauseBtn.setImageResource(android.R.drawable.ic_media_play);
+                showPauseDialog(pauseBtn);
             }
         });
 
@@ -64,6 +72,41 @@ public class WordJump extends Fragment implements WordJumpGameView.GameEventList
 
         return root;
     }
+
+    private void showInstructionsDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("How to Play")
+                .setMessage("Tap the correct verb conjugation to help the bird jump to the next platform.\n\nIf you choose wrong, the platform breaks and it's game over!\n\nTap pause to take a break.")
+                .setCancelable(false)
+                .setPositiveButton("Start Game", (dialog, which) -> {
+                    gameView.initGame(); // START GAME ONLY AFTER THIS
+                })
+                .show();
+    }
+
+    private void showPauseDialog(ImageButton pauseBtn) {
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_game_paused, null);
+        Button resumeBtn = dialogView.findViewById(R.id.button_resume);
+
+        pauseDialog = new AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        // Resume button resumes the game and dismisses the dialog
+        resumeBtn.setOnClickListener(v -> {
+            gameView.resume();
+            pauseBtn.setImageResource(android.R.drawable.ic_media_pause);
+            pauseDialog.dismiss();
+        });
+
+        if (pauseDialog.getWindow() != null) {
+            pauseDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        }
+
+        pauseDialog.show();
+    }
+
 
     @Override
     public void onResume() {

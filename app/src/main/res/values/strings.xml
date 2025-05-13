@@ -11,4 +11,6 @@
     <string name="exit">exit</string>
     <string name="back">back</string>
     <string name="profile">Profile</string>
+    <string name="game_paused">Game Paused</string>
+    <string name="play">Play</string>
 </resources>

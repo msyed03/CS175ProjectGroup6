@@ -37,5 +37,11 @@
             android:layout_marginStart="12dp"
             android:contentDescription="@string/exit"
             android:src="@android:drawable/ic_delete" />
+        <View
+            android:id="@+id/pause_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#AA000000"
+            android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>
