@@ -177,6 +177,12 @@ public class PronounceThisWord extends Fragment {
                 Rotation.Companion.enabled(),
                 new Emitter(3, TimeUnit.SECONDS).perSecond(100)
         );
+        new android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Instructions")
+                .setMessage("🎤 Press the microphone button to pronounce the Spanish word shown on the screen.\n\n🏆 Try your best pronunciation and check your score!\n\n📢 You can playback your recording using the Play button.")
+                .setPositiveButton("Got it", (dialog, which) -> dialog.dismiss())
+                .setCancelable(false)
+                .show();
     }
     private void playBack() {
         if (filename != null) {
