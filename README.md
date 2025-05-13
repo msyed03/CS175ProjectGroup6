@@ -12,7 +12,7 @@ Sharpen your speaking skills with this pronunciation challenge! A word appears o
 __With each correct answer and successful pronunciation, players increase their highscore, letting their duck grow into a majestic language learning companion!__
 
 # 📁 APK: 
-[DuoWingo APK]()
+[DuoWingo APK](https://drive.google.com/file/d/1k5j1MbKfffyJlEhtbNj4e7Yr02ZiZIxl/view?usp=sharing)
 
 # 🗃️ Backlog:
 [Group 6 Backlog](https://docs.google.com/spreadsheets/d/14BOpwhea0rWufOH7GvXuW8JSj3IbsH049w_7MpzWU8s/edit?usp=sharing)
