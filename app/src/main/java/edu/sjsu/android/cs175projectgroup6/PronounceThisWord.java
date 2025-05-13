@@ -211,22 +211,15 @@ public class PronounceThisWord extends Fragment {
         }
     }
     private void startRecording() {
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{ Manifest.permission.RECORD_AUDIO }, 1001);
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, 1001);
             return;
-        }
-
-        // ← Always create the recorder, regardless of API level
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            mediaRecorder = new MediaRecorder(context);
-        } else {
-            mediaRecorder = new MediaRecorder();
         }
         File outputDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         filename = new File(outputDir, "recorded_audio.m4a").getAbsolutePath();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mediaRecorder=new MediaRecorder(context);
+        }
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
