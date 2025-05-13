@@ -159,7 +159,8 @@ public class PronounceThisWord extends Fragment {
         button.setOnClickListener(v->playBack());
         wall2=view.findViewById(R.id.wall2);
         scoreview.setText(String.valueOf(score));
-        generateNewWord(textView);
+        //generateNewWord(textView);
+        textView.setText("gracias");
         konfettiView=view.findViewById(R.id.viewKonfetti);
         party =new Party(
                 0,
